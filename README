@@ -1,0 +1,47 @@
+Names: Denis Pyryev (dpyryev)
+       Aaron Vandergraaff (avanderg)
+ 
+Date: April 26, 2019
+Assignment: Program 2
+Instructor: Professor Phillip Nico
+Course: CPE 453-03
+
+Program Instructions:
+    
+    1. In order to build the shared library "liblwp.so" all you would have
+       to run is:
+       
+           $ make liblwp.so
+
+               or
+
+           $ make all
+
+               or
+
+           $ make
+
+    2. Then you would need to link the shared library with the program
+       you are compiling. In order to do so, you need to set your
+       LD_LIBRARY_PATH environment variable:
+
+           $ LD_LIBRARY_PATH=/wherever/your/library/is:$LD_LIBRARY_PATH
+           $ export LD_LIBRARY_PATH
+
+       Then when you compile, make sure to include a -L/path/to/file flag
+       followed by liblwp.so.
+       For example:
+       
+            gcc -Wall -g -I -o progname prog.o -L/path/to/file liblwp.so
+
+    3. Finally you can run your program using our lwp library functions. 
+       Make sure lwp.h is included in your program. Then you will have access
+       to all the lwp library functions.
+
+Important Notes:
+
+    1. We passed all of the given test cases. It was difficult to check for
+       memory leaks using valgrind, so we are not 100% sure if there are leaks.
+       But we did free as much as we malloced for some test cases we ran (nums 
+       for example), so we think there might an issue with using valgrind
+       with our program.

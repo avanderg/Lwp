@@ -6,14 +6,47 @@ Assignment: Program 2
 Instructor: Professor Phillip Nico
 Course: CPE 453-03
 
+
+LWP stands for lightweight processes. This is a lightweight threading library
+that lets the user create threads inside one original process that the OS 
+can see. The user can create lwp threads using tid_t lwp_create(lwpfun func,
+void *arg, size_t stacksize), start the lwp processes with 
+void lwp_start(void), yield a process using void lwp_yield(void), stop the 
+whole lwp system using void lwp_stop(void), get the current process's given id
+using tid_t gettid(void), and exit a process using void lwp_exit(void). The 
+user can also set their own scheduler using scheduler lwp_get_scheduler(void).
+The scheduler struct looks like:
+
+    typedef struct scheduler {
+      void   (*init)(void);            /* initialize any structures     */
+      void   (*shutdown)(void);        /* tear down any structures      */
+      void   (*admit)(thread new);     /* add a thread to the pool      */
+      void   (*remove)(thread victim); /* remove a thread from the pool */
+      thread (*next)(void);            /* select a thread to schedule   */
+      } *scheduler;
+
+where each attribute of the struct is a function pointer. The init and 
+shutdown functions are optional. If either isn't needed, just pass NULL as 
+the parameter. The user does not need to set a scheduler; the default scheduler
+is a round-robin. Once the program is started, it can be stopped and the 
+scheduler can be changed before resuming. 
+
+The instructor, Dr. Phillip Nico supplied the assembly files: fp.h and 
+magic64.S. magic64.S handles the swapping of register files and fp.h defines a
+valid floating point state for when threads are switched.
+
 Program Instructions:
     
-    1. In order to build the shared library "liblwp.so" all you would have
-       to run is:
+    1. In order to build the shared library "liblwp.so" or the static library 
+       "liblwp.a", all you would have to run is:
        
            $ make liblwp.so
 
                or
+
+           $ make liblwp.a
+               
+               or 
 
            $ make all
 
@@ -21,27 +54,41 @@ Program Instructions:
 
            $ make
 
-    2. Then you would need to link the shared library with the program
-       you are compiling. In order to do so, you need to set your
-       LD_LIBRARY_PATH environment variable:
+    2. a. Then you would need to link the shared library with the program
+          you are compiling. In order to do so, you need to set your
+          LD_LIBRARY_PATH environment variable:
 
-           $ LD_LIBRARY_PATH=/wherever/your/library/is:$LD_LIBRARY_PATH
-           $ export LD_LIBRARY_PATH
+              $ LD_LIBRARY_PATH=/wherever/your/library/is:$LD_LIBRARY_PATH
+              $ export LD_LIBRARY_PATH
 
-       Then when you compile, make sure to include a -L/path/to/file flag
-       followed by liblwp.so.
-       For example:
+          Then when you compile, make sure to include a -L/path/to/file flag
+          followed by liblwp.so.
+          For example:
        
-            gcc -Wall -g -I -o progname prog.o -L/path/to/file liblwp.so
+               gcc -Wall -g -I -o progname prog.o -L/path/to/file liblwp.so
+
+       b. Or you could use a static library:
+
+               gcc - Wall -g progname prog.o -L. -llwp
 
     3. Finally you can run your program using our lwp library functions. 
        Make sure lwp.h is included in your program. Then you will have access
        to all the lwp library functions.
 
-Important Notes:
 
-    1. We passed all of the given test cases. It was difficult to check for
-       memory leaks using valgrind, so we are not 100% sure if there are leaks.
-       But we did free as much as we malloced for some test cases we ran (nums 
-       for example), so we think there might an issue with using valgrind
-       with our program.
+    Note: You MUST call lwp_yield() to call the scheduler and let another 
+    thread run. Since lwp is implemented in user space, it is NOT preemptive.
+    See numbersmain.c for an example.
+
+Included are some fun tests, written by Dr. Phillip Nico, that demonstrate the
+usage of the library. The snakes program spawns a few snakes as individual 
+threads that randomly dance around the screen; SIGINT (Ctrl-C) deletes a snake,
+snakes can be deleted until there are none left then the program exits. The
+hungry program also spawns some snakes, but these snakes try and move to the 
+x on the screen. When a snake reaches the x, its color lightens, all snakes 
+get faster, and a new x spawns. A snake disappears when it reaches an x when it
+is white. Again, SIGINT will delete snakes. The nums program creates 5 threads
+that each print the its number number times, indented by 5*number spaces.
+
+make all compiles both liblwp.so and liblwp.a along with the 3 test programs.
+make (progname) will compile only (progname).

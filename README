@@ -31,9 +31,10 @@ the parameter. The user does not need to set a scheduler; the default scheduler
 is a round-robin. Once the program is started, it can be stopped and the 
 scheduler can be changed before resuming. 
 
-The instructor, Dr. Phillip Nico supplied the assembly files: fp.h and 
+The instructor, Dr. Phillip Nico provided the assembly files: fp.h and 
 magic64.S. magic64.S handles the swapping of register files and fp.h defines a
-valid floating point state for when threads are switched.
+valid floating point state for when threads are switched. He also provided the
+assembly prototypes in lwp.h.
 
 Program Instructions:
     
